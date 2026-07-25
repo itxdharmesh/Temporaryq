@@ -11,6 +11,9 @@
   <script type="module" src="js/store.js"></script>
   <script type="module" src="js/validation.js"></script>
   <script type="module" src="js/club.js"></script>
+  <script type="module" src="js/players-db.js"></script>
+  <script type="module" src="js/squad.js"></script>
+  <script type="module" src="js/market.js"></script>
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
@@ -114,9 +117,8 @@
       </div>
     </section>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- MAIN DASHBOARD VIEW -->
     <section id="view-dashboard" class="view hidden">
-      <!-- HEADER METRICS BAR -->
       <header class="app-header glass-panel">
         <div class="club-profile-summary">
           <div id="dash-club-badge" class="badge-icon">🛡️</div>
@@ -125,12 +127,10 @@
             <span id="dash-club-code" class="code-pill">APX-0000</span>
           </div>
         </div>
-        <button id="logout-btn" class="btn-icon" title="Log Out">🚪</button>
+        <button class="logout-btn btn-icon" title="Log Out">🚪</button>
       </header>
 
-      <!-- MAIN CONTENT SCROLL AREA -->
       <main class="dashboard-content">
-        <!-- FINANCIAL SNAPSHOT CARD -->
         <div class="card finance-card glass-panel">
           <div class="card-header">
             <h4>Financial Snapshot (GDP Bank)</h4>
@@ -139,16 +139,15 @@
           <div class="finance-grid">
             <div class="finance-item">
               <span class="label">Wallet</span>
-              <span id="dash-wallet-bal" class="amount positive">₹0</span>
+              <span class="dash-wallet-bal amount positive">₹0</span>
             </div>
             <div class="finance-item">
               <span class="label">Bank Balance</span>
-              <span id="dash-bank-bal" class="amount highlight">₹0</span>
+              <span class="dash-bank-bal amount highlight">₹0</span>
             </div>
           </div>
         </div>
 
-        <!-- CLUB OVERVIEW GRID -->
         <div class="grid-2col">
           <div class="card glass-panel">
             <span class="card-label">Club Level</span>
@@ -165,17 +164,16 @@
           </div>
         </div>
 
-        <!-- QUICK ACTION DECK -->
         <div class="card glass-panel">
           <div class="card-header">
             <h4>Club Operations</h4>
           </div>
           <div class="action-grid">
-            <button class="action-btn" onclick="alert('Squad Management coming in Phase 2!')">
+            <button class="action-btn" onclick="window.navigateToTab('view-squad')">
               <span class="icon">👟</span>
               <span>Squad</span>
             </button>
-            <button class="action-btn" onclick="alert('Player Market coming in Phase 2!')">
+            <button class="action-btn" onclick="window.navigateToTab('view-market')">
               <span class="icon">📈</span>
               <span>Market</span>
             </button>
@@ -190,44 +188,103 @@
           </div>
         </div>
 
-        <!-- NEWS FEED WIDGET -->
         <div class="card glass-panel">
           <div class="card-header">
             <h4>Universe Bulletin</h4>
           </div>
-          <div id="news-feed-list" class="news-list">
-            <div class="news-item">
-              <span class="news-time">Just now</span>
-              <p class="news-text">Welcome to the Apex Football Universe! Your club has been legally registered.</p>
-            </div>
-          </div>
+          <div id="news-feed-list" class="news-list"></div>
         </div>
       </main>
-
-      <!-- NAVIGATION BAR -->
-      <nav class="bottom-nav glass-panel">
-        <button class="nav-btn active">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-label">Home</span>
-        </button>
-        <button class="nav-btn" onclick="alert('Phase 2 feature')">
-          <span class="nav-icon">👥</span>
-          <span class="nav-label">Squad</span>
-        </button>
-        <button class="nav-btn" onclick="alert('Phase 2 feature')">
-          <span class="nav-icon">🏪</span>
-          <span class="nav-label">Market</span>
-        </button>
-        <button class="nav-btn" onclick="alert('Phase 3 feature')">
-          <span class="nav-icon">⚽</span>
-          <span class="nav-label">Matches</span>
-        </button>
-        <button class="nav-btn" onclick="alert('Phase 5 feature')">
-          <span class="nav-icon">💼</span>
-          <span class="nav-label">Economy</span>
-        </button>
-      </nav>
     </section>
+
+    <!-- SQUAD MANAGEMENT VIEW -->
+    <section id="view-squad" class="view hidden">
+      <header class="app-header glass-panel">
+        <div>
+          <h2>Club Squad</h2>
+          <p class="subtitle" id="squad-count">0 Players</p>
+        </div>
+        <span id="squad-avg-rating" class="rank-pill">OVR 0</span>
+      </header>
+
+      <main class="dashboard-content">
+        <div id="squad-card-grid" class="cards-grid"></div>
+      </main>
+    </section>
+
+    <!-- TRANSFER MARKET VIEW -->
+    <section id="view-market" class="view hidden">
+      <header class="app-header glass-panel">
+        <div>
+          <h2>Transfer Market</h2>
+          <p class="subtitle">GDP Bank Balance: <strong class="dash-bank-bal text-gold">₹0</strong></p>
+        </div>
+      </header>
+
+      <main class="dashboard-content">
+        <!-- SEARCH & FILTERS -->
+        <div class="filter-panel glass-panel">
+          <input type="text" id="market-search" placeholder="🔍 Search player name..." />
+          <div class="filter-row">
+            <select id="market-filter-pos">
+              <option value="ALL">All Positions</option>
+              <option value="GK">GK</option>
+              <option value="CB">CB</option>
+              <option value="LB">LB</option>
+              <option value="RB">RB</option>
+              <option value="CDM">CDM</option>
+              <option value="CM">CM</option>
+              <option value="CAM">CAM</option>
+              <option value="LW">LW</option>
+              <option value="RW">RW</option>
+              <option value="ST">ST</option>
+            </select>
+            <select id="market-filter-rarity">
+              <option value="ALL">All Rarities</option>
+              <option value="BRONZE">Bronze</option>
+              <option value="SILVER">Silver</option>
+              <option value="GOLD">Gold</option>
+              <option value="ELITE">Elite</option>
+              <option value="LEGEND">Legend</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="market-card-grid" class="cards-grid"></div>
+      </main>
+    </section>
+
+    <!-- PLAYER INSPECT / ACTION MODAL -->
+    <div id="player-detail-modal" class="modal-overlay hidden">
+      <div class="modal-card glass-panel">
+        <button class="modal-close-btn" onclick="document.getElementById('player-detail-modal').classList.add('hidden')">✕</button>
+        <div id="modal-player-content"></div>
+      </div>
+    </div>
+
+    <!-- PERSISTENT BOTTOM NAVIGATION BAR -->
+    <nav id="app-bottom-nav" class="bottom-nav glass-panel hidden">
+      <button class="nav-btn active" data-target="view-dashboard" onclick="window.navigateToTab('view-dashboard')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-btn" data-target="view-squad" onclick="window.navigateToTab('view-squad')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Squad</span>
+      </button>
+      <button class="nav-btn" data-target="view-market" onclick="window.navigateToTab('view-market')">
+        <span class="nav-icon">🏪</span>
+        <span class="nav-label">Market</span>
+      </button>
+      <button class="nav-btn" onclick="alert('Match Engine coming in Phase 3!')">
+        <span class="nav-icon">⚽</span>
+        <span class="nav-label">Matches</span>
+      </button>
+      <button class="nav-btn" onclick="alert('Economy System coming in Phase 5!')">
+        <span class="nav-icon">💼</span>
+        <span class="nav-label">Economy</span>
+      </button>
+    </nav>
 
   </div>
 </body>
