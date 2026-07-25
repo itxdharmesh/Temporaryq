@@ -14,6 +14,8 @@
   <script type="module" src="js/players-db.js"></script>
   <script type="module" src="js/squad.js"></script>
   <script type="module" src="js/market.js"></script>
+  <script type="module" src="js/match-engine.js"></script>
+  <script type="module" src="js/match-ui.js"></script>
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
@@ -177,7 +179,7 @@
               <span class="icon">📈</span>
               <span>Market</span>
             </button>
-            <button class="action-btn" onclick="alert('Match Engine coming in Phase 3!')">
+            <button class="action-btn" onclick="window.navigateToTab('view-match')">
               <span class="icon">⚽</span>
               <span>Matches</span>
             </button>
@@ -222,7 +224,6 @@
       </header>
 
       <main class="dashboard-content">
-        <!-- SEARCH & FILTERS -->
         <div class="filter-panel glass-panel">
           <input type="text" id="market-search" placeholder="🔍 Search player name..." />
           <div class="filter-row">
@@ -254,11 +255,97 @@
       </main>
     </section>
 
-    <!-- PLAYER INSPECT / ACTION MODAL -->
+    <!-- LIVE MATCH ARENA VIEW -->
+    <section id="view-match" class="view hidden">
+      <header class="app-header glass-panel">
+        <div>
+          <h2>Match Arena</h2>
+          <p class="subtitle">Apex League Fixture</p>
+        </div>
+        <span id="match-clock" class="rank-pill">00'</span>
+      </header>
+
+      <main class="dashboard-content">
+        <!-- SCOREBOARD ARENA -->
+        <div class="match-arena-card glass-panel">
+          <div class="scoreboard">
+            <div class="team-block">
+              <span id="match-home-name" class="team-title">Home</span>
+              <span class="team-sub">HOST</span>
+            </div>
+            <div id="match-score" class="score-display">0 - 0</div>
+            <div class="team-block">
+              <span id="match-away-name" class="team-title">Away</span>
+              <span class="team-sub">VISITOR</span>
+            </div>
+          </div>
+
+          <!-- MOMENTUM BAR -->
+          <div class="momentum-container">
+            <div id="momentum-text" class="momentum-label">Momentum: 50% - 50%</div>
+            <div class="momentum-bar-bg">
+              <div id="momentum-bar-fill" class="momentum-bar-fill" style="width: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE TACTICAL CONTROLS -->
+        <div id="tactics-controls" class="card glass-panel hidden">
+          <div class="card-header">
+            <h4>Live Tactics</h4>
+          </div>
+          <div class="tactics-grid">
+            <button class="tactic-pill" data-tactic="Defensive" onclick="window.setMatchTactic('Defensive')">🛡️ Defensive</button>
+            <button class="tactic-pill active" data-tactic="Balanced" onclick="window.setMatchTactic('Balanced')">⚖️ Balanced</button>
+            <button class="tactic-pill" data-tactic="Attacking" onclick="window.setMatchTactic('Attacking')">⚔️ Attacking</button>
+            <button class="tactic-pill" data-tactic="All Out Attack" onclick="window.setMatchTactic('All Out Attack')">🔥 All-Out</button>
+          </div>
+        </div>
+
+        <!-- KICK OFF BUTTONS -->
+        <div id="start-match-btn" class="match-start-box">
+          <button class="btn btn-success btn-block" onclick="window.startLeagueMatch()">⚽ Kick Off League Match</button>
+          <button class="btn btn-primary btn-block" style="margin-top: 8px;" onclick="window.startKnockoutMatch()">🏆 Kick Off Knockout Cup</button>
+        </div>
+
+        <!-- MINUTE BY MINUTE EVENT FEED -->
+        <div class="card glass-panel">
+          <div class="card-header">
+            <h4>Live Match Commentary</h4>
+          </div>
+          <div id="match-events-feed" class="event-feed-list"></div>
+        </div>
+      </main>
+    </section>
+
+    <!-- PLAYER INSPECT MODAL -->
     <div id="player-detail-modal" class="modal-overlay hidden">
       <div class="modal-card glass-panel">
         <button class="modal-close-btn" onclick="document.getElementById('player-detail-modal').classList.add('hidden')">✕</button>
         <div id="modal-player-content"></div>
+      </div>
+    </div>
+
+    <!-- PENALTY SHOOTOUT MODAL -->
+    <div id="shootout-modal" class="modal-overlay hidden">
+      <div class="modal-card glass-panel">
+        <h3>🎯 PENALTY SHOOTOUT</h3>
+        <p class="subtitle">Knockout Decider</p>
+        <div id="shootout-results-list" class="shootout-list"></div>
+      </div>
+    </div>
+
+    <!-- MATCH RESULT MODAL -->
+    <div id="match-result-modal" class="modal-overlay hidden">
+      <div class="modal-card glass-panel text-center">
+        <h2 id="res-title">VICTORY!</h2>
+        <div id="res-score" class="result-score">2 - 1</div>
+        <div class="reward-grid">
+          <div><span>Purse:</span> <strong id="res-purse" class="text-green">₹50,000</strong></div>
+          <div><span>Experience:</span> <strong id="res-xp" class="text-gold">+120 XP</strong></div>
+          <div><span>Rank Points:</span> <strong id="res-rank" class="text-gold">+25 RP</strong></div>
+        </div>
+        <button id="res-close-btn" class="btn btn-primary btn-block" style="margin-top: 16px;">Return to Hub</button>
       </div>
     </div>
 
@@ -276,7 +363,7 @@
         <span class="nav-icon">🏪</span>
         <span class="nav-label">Market</span>
       </button>
-      <button class="nav-btn" onclick="alert('Match Engine coming in Phase 3!')">
+      <button class="nav-btn" data-target="view-match" onclick="window.navigateToTab('view-match')">
         <span class="nav-icon">⚽</span>
         <span class="nav-label">Matches</span>
       </button>
