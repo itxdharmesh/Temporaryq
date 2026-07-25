@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Apex League Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Firebase Modular SDKs -->
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/store.js"></script>
+  <script type="module" src="js/validation.js"></script>
+  <script type="module" src="js/club.js"></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div id="app-container">
+
+    <!-- LOADING SCREEN -->
+    <section id="view-loading" class="view active">
+      <div class="spinner-container">
+        <div class="glow-spinner"></div>
+        <h2>APEX LEAGUE MANAGER</h2>
+        <p>Loading football universe...</p>
+      </div>
+    </section>
+
+    <!-- AUTHENTICATION SCREEN -->
+    <section id="view-auth" class="view hidden">
+      <div class="auth-card glass-panel">
+        <div class="brand-header">
+          <div class="brand-logo">⚽</div>
+          <h1>APEX LEAGUE</h1>
+          <p class="subtitle">Football Club & Economy Simulator</p>
+        </div>
+
+        <div class="tab-group">
+          <button id="tab-login-btn" class="tab-btn active" onclick="window.switchAuthTab('login')">Login</button>
+          <button id="tab-signup-btn" class="tab-btn" onclick="window.switchAuthTab('signup')">Sign Up</button>
+        </div>
+
+        <form id="auth-form" class="form-layout">
+          <div class="input-group">
+            <label for="auth-email">Email Address</label>
+            <input type="email" id="auth-email" placeholder="manager@apexleague.com" required>
+          </div>
+
+          <div class="input-group">
+            <label for="auth-password">Password</label>
+            <input type="password" id="auth-password" placeholder="••••••••" required minlength="6">
+          </div>
+
+          <div id="auth-error" class="error-badge hidden"></div>
+
+          <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">Log In</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- CLUB CREATION SCREEN -->
+    <section id="view-club-create" class="view hidden">
+      <div class="auth-card glass-panel">
+        <div class="brand-header">
+          <div class="brand-logo">🛡️</div>
+          <h2>FOUND YOUR CLUB</h2>
+          <p class="subtitle">Enter the Fictional Football Universe</p>
+        </div>
+
+        <form id="club-form" class="form-layout">
+          <div class="input-group">
+            <label for="club-name-input">Club Name</label>
+            <input type="text" id="club-name-input" placeholder="e.g. Valenwood FC, Zenith United" required maxlength="30">
+            <small class="input-hint">Real-world club names are prohibited in this universe.</small>
+          </div>
+
+          <div class="input-group">
+            <label>Primary Theme Color</label>
+            <div class="color-picker-grid">
+              <label class="color-option" style="--color-hex: #3b82f6;">
+                <input type="radio" name="club-color" value="#3b82f6" checked>
+                <span class="color-swatch"></span>
+              </label>
+              <label class="color-option" style="--color-hex: #ef4444;">
+                <input type="radio" name="club-color" value="#ef4444">
+                <span class="color-swatch"></span>
+              </label>
+              <label class="color-option" style="--color-hex: #10b981;">
+                <input type="radio" name="club-color" value="#10b981">
+                <span class="color-swatch"></span>
+              </label>
+              <label class="color-option" style="--color-hex: #8b5cf6;">
+                <input type="radio" name="club-color" value="#8b5cf6">
+                <span class="color-swatch"></span>
+              </label>
+              <label class="color-option" style="--color-hex: #f59e0b;">
+                <input type="radio" name="club-color" value="#f59e0b">
+                <span class="color-swatch"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="starting-bonus-box">
+            <h4>Initial Capital Allocation:</h4>
+            <ul>
+              <li>Wallet Balance: <strong>₹40,000</strong></li>
+              <li>GDP Bank Balance: <strong>₹20,00,000</strong></li>
+            </ul>
+          </div>
+
+          <div id="club-error" class="error-badge hidden"></div>
+
+          <button type="submit" id="club-submit-btn" class="btn btn-success btn-block">Initialize Club</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- MAIN DASHBOARD -->
+    <section id="view-dashboard" class="view hidden">
+      <!-- HEADER METRICS BAR -->
+      <header class="app-header glass-panel">
+        <div class="club-profile-summary">
+          <div id="dash-club-badge" class="badge-icon">🛡️</div>
+          <div class="club-text">
+            <h3 id="dash-club-name">Club Name</h3>
+            <span id="dash-club-code" class="code-pill">APX-0000</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn-icon" title="Log Out">🚪</button>
+      </header>
+
+      <!-- MAIN CONTENT SCROLL AREA -->
+      <main class="dashboard-content">
+        <!-- FINANCIAL SNAPSHOT CARD -->
+        <div class="card finance-card glass-panel">
+          <div class="card-header">
+            <h4>Financial Snapshot (GDP Bank)</h4>
+            <span class="status-dot online"></span>
+          </div>
+          <div class="finance-grid">
+            <div class="finance-item">
+              <span class="label">Wallet</span>
+              <span id="dash-wallet-bal" class="amount positive">₹0</span>
+            </div>
+            <div class="finance-item">
+              <span class="label">Bank Balance</span>
+              <span id="dash-bank-bal" class="amount highlight">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLUB OVERVIEW GRID -->
+        <div class="grid-2col">
+          <div class="card glass-panel">
+            <span class="card-label">Club Level</span>
+            <div id="dash-club-level" class="stat-value">Lvl 1</div>
+            <div class="xp-bar-container">
+              <div id="dash-xp-progress" class="xp-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="card glass-panel">
+            <span class="card-label">Rank Points</span>
+            <div id="dash-rank-points" class="stat-value">1,000</div>
+            <span id="dash-division-badge" class="rank-pill">Bronze III</span>
+          </div>
+        </div>
+
+        <!-- QUICK ACTION DECK -->
+        <div class="card glass-panel">
+          <div class="card-header">
+            <h4>Club Operations</h4>
+          </div>
+          <div class="action-grid">
+            <button class="action-btn" onclick="alert('Squad Management coming in Phase 2!')">
+              <span class="icon">👟</span>
+              <span>Squad</span>
+            </button>
+            <button class="action-btn" onclick="alert('Player Market coming in Phase 2!')">
+              <span class="icon">📈</span>
+              <span>Market</span>
+            </button>
+            <button class="action-btn" onclick="alert('Match Engine coming in Phase 3!')">
+              <span class="icon">⚽</span>
+              <span>Matches</span>
+            </button>
+            <button class="action-btn" onclick="alert('GDP Banking System coming in Phase 5!')">
+              <span class="icon">🏛️</span>
+              <span>Bank</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- NEWS FEED WIDGET -->
+        <div class="card glass-panel">
+          <div class="card-header">
+            <h4>Universe Bulletin</h4>
+          </div>
+          <div id="news-feed-list" class="news-list">
+            <div class="news-item">
+              <span class="news-time">Just now</span>
+              <p class="news-text">Welcome to the Apex Football Universe! Your club has been legally registered.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- NAVIGATION BAR -->
+      <nav class="bottom-nav glass-panel">
+        <button class="nav-btn active">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" onclick="alert('Phase 2 feature')">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Squad</span>
+        </button>
+        <button class="nav-btn" onclick="alert('Phase 2 feature')">
+          <span class="nav-icon">🏪</span>
+          <span class="nav-label">Market</span>
+        </button>
+        <button class="nav-btn" onclick="alert('Phase 3 feature')">
+          <span class="nav-icon">⚽</span>
+          <span class="nav-label">Matches</span>
+        </button>
+        <button class="nav-btn" onclick="alert('Phase 5 feature')">
+          <span class="nav-icon">💼</span>
+          <span class="nav-label">Economy</span>
+        </button>
+      </nav>
+    </section>
+
+  </div>
+</body>
+</html>
