@@ -3,6 +3,7 @@ import { loadGameState } from './store.js';
 import { initClubForm } from './club.js';
 import { initSquadView, renderSquadGrid } from './squad.js';
 import { initMarketView, renderMarketListings } from './market.js';
+import { initMatchView, startLiveMatch } from './match-ui.js';
 
 let currentUser = null;
 let gameState = null;
@@ -18,7 +19,6 @@ window.navigateToTab = function(viewId) {
     }
   });
 
-  // Update bottom nav highlights
   const navBtns = document.querySelectorAll('.nav-btn');
   navBtns.forEach(btn => {
     if (btn.dataset.target === viewId) {
@@ -28,9 +28,9 @@ window.navigateToTab = function(viewId) {
     }
   });
 
-  // View specific re-renders
   if (viewId === 'view-squad') renderSquadGrid();
   if (viewId === 'view-market') renderMarketListings();
+  if (viewId === 'view-match') initMatchView(gameState);
   if (viewId === 'view-dashboard') renderDashboard();
 };
 
@@ -38,12 +38,10 @@ export function showView(viewId) {
   window.navigateToTab(viewId);
 }
 
-// FORMAT CURRENCY TO INDIAN RUPEE FORMAT (₹)
 export function formatCurrency(amount) {
   return '₹' + Number(amount).toLocaleString('en-IN');
 }
 
-// HANDLE FIREBASE AUTH STATE
 export function handleAuthState(user) {
   currentUser = user;
   const navBar = document.getElementById('app-bottom-nav');
@@ -55,7 +53,6 @@ export function handleAuthState(user) {
     return;
   }
 
-  // Load game state
   gameState = loadGameState(user.uid);
 
   if (!gameState) {
@@ -63,37 +60,34 @@ export function handleAuthState(user) {
     showView('view-club-create');
     initClubForm(currentUser, (newSave) => {
       gameState = newSave;
-      initPhase2Modules();
+      initPhaseModules();
       navBar.classList.remove('hidden');
       renderDashboard();
       showView('view-dashboard');
     });
   } else {
-    initPhase2Modules();
+    initPhaseModules();
     navBar.classList.remove('hidden');
     renderDashboard();
     showView('view-dashboard');
   }
 }
 
-// INITIALIZE MODULES
-function initPhase2Modules() {
+function initPhaseModules() {
   initSquadView(gameState);
   initMarketView(gameState);
+  initMatchView(gameState);
 }
 
-// RENDER DASHBOARD & GLOBAL BALANCE SYNC
 export function renderDashboard() {
   if (!gameState) return;
 
   const { club, finances, news } = gameState;
 
-  // Header and Club Details
   document.getElementById('dash-club-name').innerText = club.name;
   document.getElementById('dash-club-code').innerText = club.code;
   document.getElementById('dash-club-badge').style.borderColor = club.themeColor;
 
-  // Global Currency Sync across all views
   document.querySelectorAll('.dash-wallet-bal').forEach(el => {
     el.innerText = formatCurrency(finances.walletBalance);
   });
@@ -101,7 +95,6 @@ export function renderDashboard() {
     el.innerText = formatCurrency(finances.bankBalance);
   });
 
-  // Progress metrics
   document.getElementById('dash-club-level').innerText = `Lvl ${club.level}`;
   document.getElementById('dash-rank-points').innerText = club.rankPoints.toLocaleString();
   document.getElementById('dash-division-badge').innerText = club.division;
@@ -109,7 +102,6 @@ export function renderDashboard() {
   const xpPercent = Math.min(100, Math.floor((club.xp / club.maxXp) * 100));
   document.getElementById('dash-xp-progress').style.width = `${xpPercent}%`;
 
-  // News Bulletin
   const newsContainer = document.getElementById('news-feed-list');
   if (news && news.length > 0) {
     newsContainer.innerHTML = news.map(item => `
@@ -121,17 +113,23 @@ export function renderDashboard() {
   }
 }
 
-// LISTEN TO STATE CHANGES (BUY/SELL)
+// Global Match Launch Handlers
+window.startLeagueMatch = function() {
+  startLiveMatch(false); // League mode (draws allowed)
+};
+
+window.startKnockoutMatch = function() {
+  startLiveMatch(true); // Knockout mode (penalties on draw)
+};
+
 window.addEventListener('state-updated', () => {
   renderDashboard();
 });
 
-// INITIALIZE APP
 window.addEventListener('DOMContentLoaded', () => {
   showView('view-loading');
   initAuthListeners();
 
-  // Attach logout handler for all logout buttons
   document.querySelectorAll('.logout-btn').forEach(btn => {
     btn.onclick = () => {
       import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js').then(({ signOut }) => {
