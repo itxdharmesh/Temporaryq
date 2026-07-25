@@ -1,3 +1,5 @@
+import { generateStarterSquad, generateMarketPool } from './players-db.js';
+
 const STORAGE_KEY_PREFIX = 'apex_football_save_';
 
 export function getSaveKey(uid) {
@@ -50,15 +52,27 @@ export function createInitialClubState(uid, clubName, themeColor) {
         { id: 2, type: 'Credit', amount: 2000000, desc: 'GDP Bank Opening Deposit', date: new Date().toLocaleDateString() }
       ]
     },
-    squad: [],
+    squad: generateStarterSquad(),      // 11 starting players
+    marketPool: generateMarketPool(16), // 16 market listings
     marketHistory: [],
     matchHistory: [],
     news: [
-      { id: 1, title: 'Club Registered', text: `${clubName} has officially entered the Apex League Universe.`, time: 'Just now' }
+      { id: 1, title: 'Club Registered', text: `${clubName} has officially entered the Apex League Universe. Starter squad assigned.`, time: 'Just now' }
     ],
     createdAt: new Date().toISOString()
   };
 
   saveGameState(uid, newState);
   return newState;
+}
+
+// Helper to record a financial transaction
+export function recordTransaction(state, type, amount, description) {
+  state.finances.transactionHistory.unshift({
+    id: Date.now(),
+    type,
+    amount,
+    desc: description,
+    date: new Date().toLocaleDateString()
+  });
 }
